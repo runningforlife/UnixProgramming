@@ -1,4 +1,4 @@
-#include "./socketHeader.h"
+#include "socketHeader.h"
 
 const static int SERVER_PORT = 2100;
 const static int MAX_PENDING = 10;
@@ -8,13 +8,17 @@ int main(int argc, char* argv[])
 {
     if (argc != 2) {
         printf("Usage %s <port>\n", argv[0]);
+        exit(EXIT_FAILURE);
     }
     
+    char buf[MAX_RCV_BUF];
+
     int socket_fd;
     struct sockaddr_in sa;
 
     if ((socket_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
-        printf("fail to create socket");   
+        printf("fail to create socket");
+        exit(EXIT_FAILURE);   
     }
 
     sa.sin_family = AF_INET;
@@ -24,17 +28,17 @@ int main(int argc, char* argv[])
 
     /* 将socket与地址进行绑定*/
     if (bind(socket_fd, (struct sockaddr*) &sa, sizeof(sa)) < 0) {
-        printf("fail to bind socket address\n");   
+        perror("fail to bind socket address\n");   
+        goto errout;
     }
 
     /* 监听socket */
     if (listen(socket_fd, MAX_PENDING) < 0) {
-        printf("fail to listen port\n");   
+        perror("fail to listen port\n");  
+        goto errout; 
     }
 
     printf("server is started\n");
-
-    char buf[MAX_RCV_BUF];
 
     for(; ;)
     {
@@ -48,7 +52,7 @@ int main(int argc, char* argv[])
         /* keep receving message from client */
         while(1) {
             if (read(connect_fd, buf, MAX_RCV_BUF) < 0) {
-                printf("fail to read\n");  
+                perror("fail to read");  
                 break;         
             }
 
@@ -56,7 +60,7 @@ int main(int argc, char* argv[])
             printf("Client: %s\n", buf);
         
             if (write(connect_fd, buf, strlen(buf)) < 0) {
-                printf("fail to send to client\n");
+                perror("fail to send to client\n");
                 break;
             }
 
@@ -71,7 +75,7 @@ int main(int argc, char* argv[])
 
 errout:
     close(socket_fd);
-    eixt(EXIT_FAILURE);
+    exit(EXIT_FAILURE);
 
-    return 0;
+    exit(EXIT_SUCCESS);
 }

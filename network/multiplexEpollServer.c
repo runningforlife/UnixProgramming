@@ -86,7 +86,7 @@ errout:
     }
     exit(EXIT_FAILURE);
 
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
 
 int createServerSocket(int port)
